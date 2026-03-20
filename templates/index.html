@@ -51,8 +51,24 @@
         button:hover {
             background: #00b8cc;
         }
+        #result {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+        .breach {
+            background: #2d1b1b;
+            border: 1px solid #ff4444;
+            color: #ff4444;
+        }
+        .safe {
+            background: #1b2d1b;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
     </style>
-
 </head>
 <body>
     <div class="container">
@@ -60,12 +76,18 @@
         <p>Check if your email has been in a data breach</p>
         <input type="text" id="emailInput" placeholder="Enter your email">
         <button type="button" onclick="checkEmail()">Check Email</button>
+        <div id="result"></div>
     </div>
 
-        <script>
+    <script>
 async function checkEmail() {
     const email = document.getElementById('emailInput').value;
+    const resultDiv = document.getElementById('result');
     
+    resultDiv.style.display = 'block';
+    resultDiv.className = '';
+    resultDiv.textContent = 'Checking...';
+
     const response = await fetch('/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,8 +95,14 @@ async function checkEmail() {
     });
 
     const result = await response.json();
-    console.log(result.message);
+    resultDiv.textContent = result.message;
+
+    if (result.message.includes('⚠️')) {
+        resultDiv.className = 'breach';
+    } else {
+        resultDiv.className = 'safe';
+    }
 }
-</script>
+    </script>
 </body>
 </html>
