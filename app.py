@@ -30,6 +30,52 @@ def check_email():
         return jsonify({'message': f'⚠️ Breach found! Your email appeared in {result["found"]} breach(es).'})
     else:
         return jsonify({'message': '✅ Good news! No breaches found for this email.'})
+    
+@app.route('/check-password', methods=['POST'])
+def check_password():
+    data = request.get_json()
+    password = data['password']
+    
+    score = 0
+    feedback = []
+    
+    if len(password) >= 8:
+        score += 1
+    else:
+        feedback.append("At least 8 characters")
+    
+    if any(char.isupper() for char in password):
+        score += 1
+    else:
+        feedback.append("Add uppercase letters")
+        
+    if any(char.islower() for char in password):
+        score += 1
+    else:
+        feedback.append("Add lowercase letters")
+        
+    if any(char.isdigit() for char in password):
+        score += 1
+    else:
+        feedback.append("Add numbers")
+        
+    if any(char in '!@#$%^&*()_+-=[]{}|;:,.<>?' for char in password):
+        score += 1
+    else:
+        feedback.append("Add special characters")
+    
+    if score <= 2:
+        strength = "Weak"
+    elif score == 3:
+        strength = "Medium"
+    elif score == 4:
+        strength = "Strong"
+    else:
+        strength = "Very Strong"
+    
+    return jsonify({'strength': strength, 'score': score, 'feedback': feedback})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
+

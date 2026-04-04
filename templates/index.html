@@ -51,7 +51,7 @@
         button:hover {
             background: #00b8cc;
         }
-        #result {
+        #result, #passwordResult {
             margin-top: 20px;
             padding: 14px;
             border-radius: 8px;
@@ -77,6 +77,11 @@
         <input type="text" id="emailInput" placeholder="Enter your email">
         <button type="button" onclick="checkEmail()">Check Email</button>
         <div id="result"></div>
+
+        <h2 style="font-size: 18px; margin-top: 40px; margin-bottom: 8px;">Password Strength Checker</h2>
+        <input type="password" id="passwordInput" placeholder="Enter a password">
+        <button type="button" onclick="checkPassword()">Check Password</button>
+        <div id="passwordResult"></div>
     </div>
 
     <script>
@@ -101,6 +106,37 @@ async function checkEmail() {
         resultDiv.className = 'breach';
     } else {
         resultDiv.className = 'safe';
+    }
+}
+
+async function checkPassword() {
+    const password = document.getElementById('passwordInput').value;
+    const resultDiv = document.getElementById('passwordResult');
+    
+    resultDiv.style.display = 'block';
+    resultDiv.textContent = 'Checking...';
+
+    const response = await fetch('/check-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
+    });
+
+    const result = await response.json();
+    
+    resultDiv.textContent = `Strength: ${result.strength} — ${result.feedback.join(', ') || 'Great password!'}`;
+    
+    if (result.strength === 'Weak') {
+        resultDiv.className = 'breach';
+    } else if (result.strength === 'Very Strong') {
+        resultDiv.className = 'safe';
+    } else {
+        resultDiv.className = '';
+        resultDiv.style.background = '#1a1a2e';
+        resultDiv.style.border = '1px solid #f0a500';
+        resultDiv.style.color = '#f0a500';
+        resultDiv.style.padding = '14px';
+        resultDiv.style.borderRadius = '8px';
     }
 }
     </script>
