@@ -74,6 +74,35 @@ def check_password():
         strength = "Very Strong"
     
     return jsonify({'strength': strength, 'score': score, 'feedback': feedback})
+@app.route('/check-url', methods=['POST'])
+def check_url():
+    data = request.get_json()
+    url = data['url']
+    
+    api_key = os.getenv("GOOGLE_API_KEY")
+    endpoint = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={api_key}"
+    
+    payload = {
+        "client": {
+            "clientId": "security-dashboard",
+            "clientVersion": "1.0"
+        },
+        "threatInfo": {
+            "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+            "platformTypes": ["ANY_PLATFORM"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [{"url": url}]
+        }
+    }
+    
+    response = requests.post(endpoint, json=payload)
+    result = response.json()
+    print(response.json())
+    
+    if result.get("matches"):
+        return jsonify({'message': '⚠️ Warning! This URL is dangerous.'})
+    else:
+        return jsonify({'message': '✅ This URL appears to be safe.'})
 
 
 if __name__ == '__main__':

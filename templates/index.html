@@ -68,6 +68,13 @@
             border: 1px solid #00ff88;
             color: #00ff88;
         }
+        #result, #passwordResult, #urlResult {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+    }
     </style>
 </head>
 <body>
@@ -82,6 +89,11 @@
         <input type="password" id="passwordInput" placeholder="Enter a password">
         <button type="button" onclick="checkPassword()">Check Password</button>
         <div id="passwordResult"></div>
+        
+        <h2 style="font-size: 18px; margin-top: 40px; margin-bottom: 8px;">URL Safety Checker</h2>
+        <input type="text" id="urlInput" placeholder="Enter a URL (e.g. https://example.com)">
+        <button type="button" onclick="checkUrl()">Check URL</button>
+        <div id="urlResult"></div>
     </div>
 
     <script>
@@ -137,6 +149,29 @@ async function checkPassword() {
         resultDiv.style.color = '#f0a500';
         resultDiv.style.padding = '14px';
         resultDiv.style.borderRadius = '8px';
+    }
+}
+async function checkUrl() {
+    const url = document.getElementById('urlInput').value;
+    const resultDiv = document.getElementById('urlResult');
+    
+    resultDiv.style.display = 'block';
+    resultDiv.className = '';
+    resultDiv.textContent = 'Checking...';
+
+    const response = await fetch('/check-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url })
+    });
+
+    const result = await response.json();
+    resultDiv.textContent = result.message;
+
+    if (result.message.includes('⚠️')) {
+        resultDiv.className = 'breach';
+    } else {
+        resultDiv.className = 'safe';
     }
 }
     </script>
