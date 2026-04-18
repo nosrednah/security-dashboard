@@ -8,8 +8,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: sans-serif;
-            background: #0a0e1a;
-            color: #e2e8f0;
+            background: #ffffff;
+            color: #1a1a2e;
             min-height: 100vh;
             display: flex;
             align-items: flex-start;
@@ -21,14 +21,14 @@
             width: 100%;
             max-width: 750px;
             min-height: 420px;
-            border: 1px solid #1e2d45;
+            border: 1px solid #d6cfc4;
             border-radius: 12px;
             overflow: hidden;
         }
         .sidebar {
             width: 200px;
-            background: #0d1424;
-            border-right: 1px solid #1e2d45;
+            background: #f5efe6;
+            border-right: 1px solid #d6cfc4;
             padding: 1.5rem 1rem;
             display: flex;
             flex-direction: column;
@@ -38,7 +38,7 @@
         .sidebar-title {
             font-size: 11px;
             font-weight: 600;
-            color: #64748b;
+            color: #8a7f72;
             margin-bottom: 12px;
             letter-spacing: 0.08em;
         }
@@ -47,19 +47,19 @@
             border-radius: 8px;
             font-size: 14px;
             cursor: pointer;
-            color: #94a3b8;
+            color: #5a5248;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         .nav-item.active {
-            background: #111827;
-            color: #e2e8f0;
-            border: 1px solid #1e2d45;
+            background: #ede6da;
+            color: #1a1a2e;
+            border: 1px solid #d6cfc4;
             font-weight: 500;
         }
         .nav-item:hover:not(.active) {
-            background: #111827;
+            background: #ede6da;
         }
         .nav-dot {
             width: 8px;
@@ -73,19 +73,19 @@
         .main {
             flex: 1;
             padding: 1.5rem;
-            background: #0a0e1a;
+            background: #ffffff;
         }
         .panel { display: none; }
         .panel.active { display: block; }
         .panel-title {
             font-size: 16px;
             font-weight: 500;
-            color: #e2e8f0;
+            color: #1a1a2e;
             margin-bottom: 4px;
         }
         .panel-desc {
             font-size: 13px;
-            color: #64748b;
+            color: #6b6b80;
             margin-bottom: 1.5rem;
         }
         .input-row {
@@ -95,24 +95,24 @@
         .input-row input {
             flex: 1;
             padding: 10px 12px;
-            border: 1px solid #1e2d45;
+            border: 1px solid #d6cfc4;
             border-radius: 8px;
-            background: #111827;
-            color: #e2e8f0;
+            background: #faf9f7;
+            color: #1a1a2e;
             font-size: 14px;
         }
         .input-row button {
             padding: 10px 16px;
-            border: 1px solid #1e2d45;
+            border: none;
             border-radius: 8px;
-            background: #00e5ff;
-            color: #0a0e1a;
+            background: #1a1a2e;
+            color: #ffffff;
             font-size: 14px;
             cursor: pointer;
             white-space: nowrap;
             font-weight: 700;
         }
-        .input-row button:hover { background: #00b8cc; }
+        .input-row button:hover { background: #2e2e4a; }
         .result-box {
             margin-top: 1rem;
             padding: 12px 14px;
@@ -121,25 +121,25 @@
             display: none;
         }
         .result-danger {
-            background: #2d1b1b;
-            border: 1px solid #ff4444;
-            color: #ff4444;
+            background: #fef2f2;
+            border: 1px solid #f87171;
+            color: #b91c1c;
         }
         .result-success {
-            background: #1b2d1b;
-            border: 1px solid #00ff88;
-            color: #00ff88;
+            background: #f0fdf4;
+            border: 1px solid #4ade80;
+            color: #15803d;
         }
         .result-warning {
-            background: #2d2414;
-            border: 1px solid #f0a500;
-            color: #f0a500;
+            background: #fffbeb;
+            border: 1px solid #fbbf24;
+            color: #92400e;
         }
         .strength-bar {
             margin-top: 12px;
             height: 6px;
             border-radius: 3px;
-            background: #1e2d45;
+            background: #e5e7eb;
             overflow: hidden;
         }
         .strength-fill {
