@@ -125,14 +125,15 @@ def check_email():
     params = {"func": "auto", "term": email}
     response = requests.get(url, headers=headers, params=params)
     result = response.json()
+    print("BreachDirectory response:", result)
 
     found = result.get("found") or 0
     if result.get("success") and found > 0:
         message = f"⚠️ Breach found! Your email appeared in {found} breach(es)."
-    elif not result.get("success"):
-        message = f"❌ API error: {result.get('error', 'Unknown error')}"
-    else:
+    elif result.get("success") and found == 0:
         message = "✅ Good news! No breaches found for this email."
+    else:
+        message = f"❌ API error: {result.get('error', str(result))}"
 
     db.session.add(ScanHistory(user_id=current_user.id, scan_type="Email", input_value=email, result=message))
     db.session.commit()

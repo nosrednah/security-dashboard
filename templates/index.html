@@ -303,7 +303,7 @@ async function checkEmail() {
     const response = await fetch('/check-email', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({email}) });
     const result = await response.json();
     resultDiv.textContent = result.message;
-    resultDiv.className = 'result-box ' + (result.message.includes('⚠️') ? 'result-danger' : 'result-success');
+    resultDiv.className = 'result-box ' + (result.message.includes('⚠️') || result.message.includes('❌') ? 'result-danger' : 'result-success');
 }
 
 async function checkPassword() {
@@ -336,7 +336,7 @@ async function checkUrl() {
     const response = await fetch('/check-url', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({url}) });
     const result = await response.json();
     resultDiv.textContent = result.message;
-    resultDiv.className = 'result-box ' + (result.message.includes('⚠️') ? 'result-danger' : 'result-success');
+    resultDiv.className = 'result-box ' + (result.message.includes('⚠️') || result.message.includes('❌') ? 'result-danger' : 'result-success');
 }
     </script>
 </body>
