@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: security-dashboard
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: RAPIDAPI_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
