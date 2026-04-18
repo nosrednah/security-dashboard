@@ -317,14 +317,15 @@ async function checkPassword() {
     const response = await fetch('/check-password', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password}) });
     const result = await response.json();
     const feedback = result.feedback.length ? result.feedback.join(', ') : 'Great password!';
-    resultDiv.textContent = 'Strength: ' + result.strength + ' — ' + feedback;
+    const pwnedMsg = result.pwned > 0 ? ` ⚠️ Seen in ${result.pwned.toLocaleString()} data breaches!` : ' ✅ Not found in any breaches.';
+    resultDiv.textContent = 'Strength: ' + result.strength + ' — ' + feedback + pwnedMsg;
     bar.style.display = 'block';
     const pct = (result.score / 5) * 100;
     const colors = { Weak: '#E24B4A', Medium: '#EF9F27', Strong: '#639922', 'Very Strong': '#1D9E75' };
     const cls = { Weak: 'result-danger', Medium: 'result-warning', Strong: 'result-success', 'Very Strong': 'result-success' };
     fill.style.width = pct + '%';
     fill.style.background = colors[result.strength];
-    resultDiv.className = 'result-box ' + cls[result.strength];
+    resultDiv.className = 'result-box ' + (result.pwned > 0 ? 'result-danger' : cls[result.strength]);
 }
 
 async function checkUrl() {

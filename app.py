@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import bcrypt
 import requests
+import hashlib
 import os
 from dotenv import load_dotenv
 from datetime import datetime
@@ -182,10 +183,24 @@ def check_password():
     else:
         strength = "Very Strong"
 
-    message = f"Strength: {strength}"
+    # Check HIBP Pwned Passwords (k-anonymity — only first 5 chars of hash sent)
+    sha1 = hashlib.sha1(password.encode()).hexdigest().upper()
+    prefix, suffix = sha1[:5], sha1[5:]
+    pwned_count = 0
+    try:
+        res = requests.get(f"https://api.pwnedpasswords.com/range/{prefix}", timeout=5)
+        for line in res.text.splitlines():
+            h, count = line.split(":")
+            if h == suffix:
+                pwned_count = int(count)
+                break
+    except Exception:
+        pass
+
+    message = f"Strength: {strength}" + (f" | Pwned {pwned_count:,}x" if pwned_count else "")
     db.session.add(ScanHistory(user_id=current_user.id, scan_type="Password", input_value="(hidden)", result=message))
     db.session.commit()
-    return jsonify({"strength": strength, "score": score, "feedback": feedback})
+    return jsonify({"strength": strength, "score": score, "feedback": feedback, "pwned": pwned_count})
 
 
 @app.route("/check-url", methods=["POST"])
