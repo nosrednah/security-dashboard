@@ -147,6 +147,62 @@
             border-radius: 3px;
             transition: width 0.3s;
         }
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid #d6cfc4;
+        }
+        .logout-btn {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #b91c1c;
+            background: none;
+            border: 1px solid #f87171;
+            text-align: left;
+        }
+        .logout-btn:hover { background: #fef2f2; }
+        .username-label {
+            font-size: 12px;
+            color: #8a7f72;
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        .history-table th {
+            text-align: left;
+            padding: 6px 8px;
+            color: #6b6b80;
+            font-weight: 500;
+            border-bottom: 1px solid #d6cfc4;
+        }
+        .history-table td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #f0ebe3;
+            color: #1a1a2e;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-email { background: #dbeafe; color: #1d4ed8; }
+        .badge-password { background: #dcfce7; color: #166534; }
+        .badge-url { background: #ffedd5; color: #9a3412; }
+        .empty-history { font-size: 13px; color: #8a7f72; margin-top: 12px; }
     </style>
 </head>
 <body>
@@ -161,6 +217,13 @@
             </div>
             <div class="nav-item" onclick="switchPanel('url', this)">
                 <div class="nav-dot dot-url"></div> URL Checker
+            </div>
+            <div class="nav-item" onclick="switchPanel('history', this)">
+                <div class="nav-dot" style="background:#8a7f72"></div> History
+            </div>
+            <div class="sidebar-footer">
+                <div class="username-label">{{ username }}</div>
+                <a href="/logout"><button class="logout-btn">Logout</button></a>
             </div>
         </div>
 
@@ -197,6 +260,12 @@
                 </div>
                 <div id="urlResult" class="result-box"></div>
             </div>
+
+            <div id="panel-history" class="panel">
+                <div class="panel-title">Scan History</div>
+                <div class="panel-desc">Your last 50 scans.</div>
+                <div id="historyContent"><div class="empty-history">Loading...</div></div>
+            </div>
         </div>
     </div>
 
@@ -206,6 +275,23 @@ function switchPanel(name, el) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('panel-' + name).classList.add('active');
     el.classList.add('active');
+    if (name === 'history') loadHistory();
+}
+
+async function loadHistory() {
+    const res = await fetch('/history');
+    const scans = await res.json();
+    const el = document.getElementById('historyContent');
+    if (!scans.length) { el.innerHTML = '<div class="empty-history">No scans yet.</div>'; return; }
+    const badges = { Email: 'badge-email', Password: 'badge-password', URL: 'badge-url' };
+    el.innerHTML = '<table class="history-table"><thead><tr><th>Type</th><th>Input</th><th>Result</th><th>Time</th></tr></thead><tbody>'
+        + scans.map(s => `<tr>
+            <td><span class="badge ${badges[s.type]}">${s.type}</span></td>
+            <td title="${s.input}">${s.input}</td>
+            <td title="${s.result}">${s.result}</td>
+            <td>${s.time}</td>
+        </tr>`).join('')
+        + '</tbody></table>';
 }
 
 async function checkEmail() {
