@@ -5,174 +5,252 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Security Dashboard</title>
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
+            font-family: sans-serif;
             background: #0a0e1a;
             color: #e2e8f0;
-            font-family: sans-serif;
+            min-height: 100vh;
             display: flex;
+            align-items: flex-start;
             justify-content: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
         }
-        .container {
-            max-width: 500px;
+        .app {
+            display: flex;
             width: 100%;
+            max-width: 750px;
+            min-height: 420px;
+            border: 1px solid #1e2d45;
+            border-radius: 12px;
+            overflow: hidden;
         }
-        h1 {
-            font-size: 24px;
-            margin-bottom: 8px;
+        .sidebar {
+            width: 200px;
+            background: #0d1424;
+            border-right: 1px solid #1e2d45;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-shrink: 0;
         }
-        p {
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 600;
             color: #64748b;
-            margin-bottom: 32px;
-            font-size: 14px;
+            margin-bottom: 12px;
+            letter-spacing: 0.08em;
         }
-        input {
-            width: 100%;
-            padding: 12px 14px;
+        .nav-item {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-item.active {
             background: #111827;
+            color: #e2e8f0;
+            border: 1px solid #1e2d45;
+            font-weight: 500;
+        }
+        .nav-item:hover:not(.active) {
+            background: #111827;
+        }
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .dot-email { background: #378ADD; }
+        .dot-password { background: #1D9E75; }
+        .dot-url { background: #D85A30; }
+        .main {
+            flex: 1;
+            padding: 1.5rem;
+            background: #0a0e1a;
+        }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        .panel-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+        }
+        .panel-desc {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+        .input-row input {
+            flex: 1;
+            padding: 10px 12px;
             border: 1px solid #1e2d45;
             border-radius: 8px;
+            background: #111827;
             color: #e2e8f0;
             font-size: 14px;
-            margin-bottom: 12px;
-            box-sizing: border-box;
         }
-        button {
-            width: 100%;
-            padding: 12px;
+        .input-row button {
+            padding: 10px 16px;
+            border: 1px solid #1e2d45;
+            border-radius: 8px;
             background: #00e5ff;
             color: #0a0e1a;
-            border: none;
-            border-radius: 8px;
             font-size: 14px;
-            font-weight: 700;
             cursor: pointer;
+            white-space: nowrap;
+            font-weight: 700;
         }
-        button:hover {
-            background: #00b8cc;
-        }
-        #result, #passwordResult {
-            margin-top: 20px;
-            padding: 14px;
+        .input-row button:hover { background: #00b8cc; }
+        .result-box {
+            margin-top: 1rem;
+            padding: 12px 14px;
             border-radius: 8px;
             font-size: 14px;
             display: none;
         }
-        .breach {
+        .result-danger {
             background: #2d1b1b;
             border: 1px solid #ff4444;
             color: #ff4444;
         }
-        .safe {
+        .result-success {
             background: #1b2d1b;
             border: 1px solid #00ff88;
             color: #00ff88;
         }
-        #result, #passwordResult, #urlResult {
-            margin-top: 20px;
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 14px;
-            display: none;
-    }
+        .result-warning {
+            background: #2d2414;
+            border: 1px solid #f0a500;
+            color: #f0a500;
+        }
+        .strength-bar {
+            margin-top: 12px;
+            height: 6px;
+            border-radius: 3px;
+            background: #1e2d45;
+            overflow: hidden;
+        }
+        .strength-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Security Dashboard</h1>
-        <p>Check if your email has been in a data breach</p>
-        <input type="text" id="emailInput" placeholder="Enter your email">
-        <button type="button" onclick="checkEmail()">Check Email</button>
-        <div id="result"></div>
+    <div class="app">
+        <div class="sidebar">
+            <div class="sidebar-title">SECURITY TOOLS</div>
+            <div class="nav-item active" onclick="switchPanel('email', this)">
+                <div class="nav-dot dot-email"></div> Email Breach
+            </div>
+            <div class="nav-item" onclick="switchPanel('password', this)">
+                <div class="nav-dot dot-password"></div> Password
+            </div>
+            <div class="nav-item" onclick="switchPanel('url', this)">
+                <div class="nav-dot dot-url"></div> URL Checker
+            </div>
+        </div>
 
-        <h2 style="font-size: 18px; margin-top: 40px; margin-bottom: 8px;">Password Strength Checker</h2>
-        <input type="password" id="passwordInput" placeholder="Enter a password">
-        <button type="button" onclick="checkPassword()">Check Password</button>
-        <div id="passwordResult"></div>
-        
-        <h2 style="font-size: 18px; margin-top: 40px; margin-bottom: 8px;">URL Safety Checker</h2>
-        <input type="text" id="urlInput" placeholder="Enter a URL (e.g. https://example.com)">
-        <button type="button" onclick="checkUrl()">Check URL</button>
-        <div id="urlResult"></div>
+        <div class="main">
+            <div id="panel-email" class="panel active">
+                <div class="panel-title">Email Breach Checker</div>
+                <div class="panel-desc">Check if your email appeared in a known data breach.</div>
+                <div class="input-row">
+                    <input type="text" id="emailInput" placeholder="you@example.com" />
+                    <button onclick="checkEmail()">Check</button>
+                </div>
+                <div id="emailResult" class="result-box"></div>
+            </div>
+
+            <div id="panel-password" class="panel">
+                <div class="panel-title">Password Strength</div>
+                <div class="panel-desc">Analyse how strong your password is.</div>
+                <div class="input-row">
+                    <input type="password" id="passwordInput" placeholder="Enter a password" />
+                    <button onclick="checkPassword()">Check</button>
+                </div>
+                <div id="passwordResult" class="result-box"></div>
+                <div class="strength-bar" id="strengthBar" style="display:none">
+                    <div class="strength-fill" id="strengthFill"></div>
+                </div>
+            </div>
+
+            <div id="panel-url" class="panel">
+                <div class="panel-title">URL Safety Checker</div>
+                <div class="panel-desc">Detect malware, phishing and dangerous links.</div>
+                <div class="input-row">
+                    <input type="text" id="urlInput" placeholder="https://example.com" />
+                    <button onclick="checkUrl()">Check</button>
+                </div>
+                <div id="urlResult" class="result-box"></div>
+            </div>
+        </div>
     </div>
 
     <script>
+function switchPanel(name, el) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    el.classList.add('active');
+}
+
 async function checkEmail() {
     const email = document.getElementById('emailInput').value;
-    const resultDiv = document.getElementById('result');
-    
+    const resultDiv = document.getElementById('emailResult');
     resultDiv.style.display = 'block';
-    resultDiv.className = '';
+    resultDiv.className = 'result-box';
     resultDiv.textContent = 'Checking...';
-
-    const response = await fetch('/check-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email })
-    });
-
+    const response = await fetch('/check-email', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({email}) });
     const result = await response.json();
     resultDiv.textContent = result.message;
-
-    if (result.message.includes('⚠️')) {
-        resultDiv.className = 'breach';
-    } else {
-        resultDiv.className = 'safe';
-    }
+    resultDiv.className = 'result-box ' + (result.message.includes('⚠️') ? 'result-danger' : 'result-success');
 }
 
 async function checkPassword() {
     const password = document.getElementById('passwordInput').value;
     const resultDiv = document.getElementById('passwordResult');
-    
+    const bar = document.getElementById('strengthBar');
+    const fill = document.getElementById('strengthFill');
     resultDiv.style.display = 'block';
+    resultDiv.className = 'result-box';
     resultDiv.textContent = 'Checking...';
-
-    const response = await fetch('/check-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: password })
-    });
-
+    const response = await fetch('/check-password', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password}) });
     const result = await response.json();
-    
-    resultDiv.textContent = `Strength: ${result.strength} — ${result.feedback.join(', ') || 'Great password!'}`;
-    
-    if (result.strength === 'Weak') {
-        resultDiv.className = 'breach';
-    } else if (result.strength === 'Very Strong') {
-        resultDiv.className = 'safe';
-    } else {
-        resultDiv.className = '';
-        resultDiv.style.background = '#1a1a2e';
-        resultDiv.style.border = '1px solid #f0a500';
-        resultDiv.style.color = '#f0a500';
-        resultDiv.style.padding = '14px';
-        resultDiv.style.borderRadius = '8px';
-    }
+    const feedback = result.feedback.length ? result.feedback.join(', ') : 'Great password!';
+    resultDiv.textContent = 'Strength: ' + result.strength + ' — ' + feedback;
+    bar.style.display = 'block';
+    const pct = (result.score / 5) * 100;
+    const colors = { Weak: '#E24B4A', Medium: '#EF9F27', Strong: '#639922', 'Very Strong': '#1D9E75' };
+    const cls = { Weak: 'result-danger', Medium: 'result-warning', Strong: 'result-success', 'Very Strong': 'result-success' };
+    fill.style.width = pct + '%';
+    fill.style.background = colors[result.strength];
+    resultDiv.className = 'result-box ' + cls[result.strength];
 }
+
 async function checkUrl() {
     const url = document.getElementById('urlInput').value;
     const resultDiv = document.getElementById('urlResult');
-    
     resultDiv.style.display = 'block';
-    resultDiv.className = '';
+    resultDiv.className = 'result-box';
     resultDiv.textContent = 'Checking...';
-
-    const response = await fetch('/check-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url })
-    });
-
+    const response = await fetch('/check-url', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({url}) });
     const result = await response.json();
     resultDiv.textContent = result.message;
-
-    if (result.message.includes('⚠️')) {
-        resultDiv.className = 'breach';
-    } else {
-        resultDiv.className = 'safe';
-    }
+    resultDiv.className = 'result-box ' + (result.message.includes('⚠️') ? 'result-danger' : 'result-success');
 }
     </script>
 </body>
