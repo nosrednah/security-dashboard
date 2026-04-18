@@ -117,23 +117,26 @@ def check_email():
     data = request.get_json()
     email = data["email"]
 
-    url = "https://breachdirectory.p.rapidapi.com/"
     headers = {
-        "X-RapidAPI-Key": os.getenv("RAPIDAPI_KEY"),
-        "X-RapidAPI-Host": "breachdirectory.p.rapidapi.com"
+        "User-Agent": "SecurityDashboard/1.0",
+        "hibp-api-key": os.getenv("HIBP_API_KEY", "")
     }
-    params = {"func": "auto", "term": email}
-    response = requests.get(url, headers=headers, params=params)
-    result = response.json()
-    print("BreachDirectory response:", result)
+    response = requests.get(
+        f"https://haveibeenpwned.com/api/v3/breachedaccount/{requests.utils.quote(email)}?truncateResponse=false",
+        headers=headers
+    )
 
-    found = result.get("found") or 0
-    if result.get("success") and found > 0:
-        message = f"⚠️ Breach found! Your email appeared in {found} breach(es)."
-    elif result.get("success") and found == 0:
+    if response.status_code == 200:
+        breaches = response.json()
+        names = ", ".join(b["Name"] for b in breaches[:5])
+        more = f" (+{len(breaches) - 5} more)" if len(breaches) > 5 else ""
+        message = f"⚠️ Found in {len(breaches)} breach(es): {names}{more}"
+    elif response.status_code == 404:
         message = "✅ Good news! No breaches found for this email."
+    elif response.status_code == 401:
+        message = "❌ HIBP API key missing or invalid."
     else:
-        message = f"❌ API error: {result.get('error', str(result))}"
+        message = f"❌ Error checking email (status {response.status_code})"
 
     db.session.add(ScanHistory(user_id=current_user.id, scan_type="Email", input_value=email, result=message))
     db.session.commit()
