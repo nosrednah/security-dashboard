@@ -126,8 +126,11 @@ def check_email():
     response = requests.get(url, headers=headers, params=params)
     result = response.json()
 
-    if result.get("success") and result.get("found") > 0:
-        message = f"⚠️ Breach found! Your email appeared in {result['found']} breach(es)."
+    found = result.get("found") or 0
+    if result.get("success") and found > 0:
+        message = f"⚠️ Breach found! Your email appeared in {found} breach(es)."
+    elif not result.get("success"):
+        message = f"❌ API error: {result.get('error', 'Unknown error')}"
     else:
         message = "✅ Good news! No breaches found for this email."
 
