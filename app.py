@@ -118,26 +118,27 @@ def check_email():
     data = request.get_json()
     email = data["email"]
 
-    headers = {
-        "User-Agent": "SecurityDashboard/1.0",
-        "hibp-api-key": os.getenv("HIBP_API_KEY", "")
-    }
-    response = requests.get(
-        f"https://haveibeenpwned.com/api/v3/breachedaccount/{requests.utils.quote(email)}?truncateResponse=false",
-        headers=headers
-    )
-
-    if response.status_code == 200:
-        breaches = response.json()
-        names = ", ".join(b["Name"] for b in breaches[:5])
-        more = f" (+{len(breaches) - 5} more)" if len(breaches) > 5 else ""
-        message = f"⚠️ Found in {len(breaches)} breach(es): {names}{more}"
-    elif response.status_code == 404:
-        message = "✅ Good news! No breaches found for this email."
-    elif response.status_code == 401:
-        message = "❌ HIBP API key missing or invalid."
-    else:
-        message = f"❌ Error checking email (status {response.status_code})"
+    try:
+        response = requests.get(
+            "https://api.proxynova.com/comb",
+            params={"query": email},
+            headers={"User-Agent": "SecurityDashboard/1.0"},
+            timeout=8
+        )
+        if response.status_code == 200:
+            result = response.json()
+            lines = result.get("lines", [])
+            exact = [l for l in lines if l.lower().startswith(email.lower() + ":")]
+            if exact:
+                message = f"⚠️ Email found in {len(exact)} leaked record(s) in breach databases."
+            else:
+                message = "✅ Good news! No breaches found for this email."
+        else:
+            message = f"❌ Error checking email (status {response.status_code})"
+    except requests.Timeout:
+        message = "❌ Request timed out. Try again later."
+    except requests.RequestException as e:
+        message = f"❌ Request failed: {str(e)}"
 
     db.session.add(ScanHistory(user_id=current_user.id, scan_type="Email", input_value=email, result=message))
     db.session.commit()
