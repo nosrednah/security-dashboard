@@ -116,7 +116,9 @@ def history():
 @login_required
 def check_email():
     data = request.get_json()
-    email = data["email"]
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
 
     try:
         response = requests.get(
@@ -149,7 +151,9 @@ def check_email():
 @login_required
 def check_password():
     data = request.get_json()
-    password = data["password"]
+    password = data.get("password", "")
+    if not password:
+        return jsonify({"error": "Password is required"}), 400
 
     score = 0
     feedback = []
@@ -208,26 +212,33 @@ def check_password():
 @login_required
 def check_url():
     data = request.get_json()
-    url = data["url"]
+    url = data.get("url", "").strip()
+    if not url:
+        return jsonify({"error": "URL is required"}), 400
 
-    api_key = os.getenv("GOOGLE_API_KEY")
-    endpoint = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={api_key}"
-    payload = {
-        "client": {"clientId": "security-dashboard", "clientVersion": "1.0"},
-        "threatInfo": {
-            "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
-            "platformTypes": ["ANY_PLATFORM"],
-            "threatEntryTypes": ["URL"],
-            "threatEntries": [{"url": url}]
+    try:
+        api_key = os.getenv("GOOGLE_API_KEY")
+        endpoint = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={api_key}"
+        payload = {
+            "client": {"clientId": "security-dashboard", "clientVersion": "1.0"},
+            "threatInfo": {
+                "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+                "platformTypes": ["ANY_PLATFORM"],
+                "threatEntryTypes": ["URL"],
+                "threatEntries": [{"url": url}]
+            }
         }
-    }
-    response = requests.post(endpoint, json=payload)
-    result = response.json()
+        response = requests.post(endpoint, json=payload, timeout=8)
+        result = response.json()
 
-    if result.get("matches"):
-        message = "⚠️ Warning! This URL is dangerous."
-    else:
-        message = "✅ This URL appears to be safe."
+        if result.get("matches"):
+            message = "⚠️ Warning! This URL is dangerous."
+        else:
+            message = "✅ This URL appears to be safe."
+    except requests.Timeout:
+        message = "❌ Request timed out. Try again later."
+    except requests.RequestException as e:
+        message = f"❌ Request failed: {str(e)}"
 
     db.session.add(ScanHistory(user_id=current_user.id, scan_type="URL", input_value=url, result=message))
     db.session.commit()
